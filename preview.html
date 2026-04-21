@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>자리 배치 프로그램</title>
+<style>
+  body {
+    font-family: Arial;
+    text-align: center;
+  }
+
+  .wrapper {
+    display: flex;
+    justify-content: center;
+    gap: 50px;
+    margin-top: 20px;
+  }
+
+  /* 대기열 */
+  .waiting {
+    display: grid;
+    grid-template-columns: repeat(2, 100px);
+    gap: 10px;
+  }
+
+  .block {
+    display: inline-block;
+  }
+
+  .row {
+    display: flex;
+  }
+
+  .seat {
+    width: 100px;
+    height: 50px;
+    border: 1px solid #999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .yellow {
+    background-color: #f6e7b4;
+  }
+
+  .selected {
+    outline: 3px solid red;
+  }
+
+  button {
+    margin: 10px;
+    padding: 10px 15px;
+  }
+</style>
+</head>
+<body>
+
+<h2>자리 배치 프로그램</h2>
+
+<button onclick="shuffleSeats()">랜덤 섞기</button>
+<button onclick="startManual()">수동 배치</button>
+
+<div class="wrapper">
+
+  <!-- 대기열 -->
+  <div>
+    <h3>대기열</h3>
+    <div id="waiting" class="waiting"></div>
+  </div>
+
+  <!-- 자리 -->
+  <div class="wrapper">
+
+    <!-- 왼쪽 -->
+    <div class="block" id="left">
+      <div class="row"><div class="seat yellow"></div><div class="seat yellow"></div></div>
+      <div class="row"><div class="seat yellow"></div><div class="seat yellow"></div></div>
+      <div class="row"><div class="seat"></div><div class="seat yellow"></div></div>
+      <div class="row"><div class="seat"></div><div class="seat yellow"></div></div>
+    </div>
+
+    <!-- 가운데 -->
+    <div class="block" id="center">
+      <div class="row"><div class="seat yellow"></div><div class="seat yellow"></div><div class="seat yellow"></div></div>
+      <div class="row"><div class="seat yellow"></div><div class="seat yellow"></div><div class="seat yellow"></div></div>
+      <div class="row"><div class="seat yellow"></div><div class="seat yellow"></div><div class="seat yellow"></div></div>
+      <div class="row"><div class="seat yellow"></div><div class="seat yellow"></div><div class="seat yellow"></div></div>
+      <div class="row"><div class="seat"></div><div class="seat yellow"></div><div class="seat yellow"></div></div>
+    </div>
+
+    <!-- 오른쪽 -->
+    <div class="block" id="right">
+      <div class="row"><div class="seat yellow"></div><div class="seat yellow"></div></div>
+      <div class="row"><div class="seat yellow"></div><div class="seat yellow"></div></div>
+      <div class="row"><div class="seat yellow"></div><div class="seat yellow"></div></div>
+      <div class="row"><div class="seat yellow"></div><div class="seat yellow"></div></div>
+      <div class="row"><div class="seat yellow"></div><div class="seat yellow"></div></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const students = [
+"조윤","조은결","권태현","김성호","한혜경","유지산",
+"이춘우","최준호","이서우",
+"김민정","박지우","박은빈",
+"진미경","박상우","조용민",
+"김민정","이종혁","김유선",
+"심정호","이태경",
+"황동건","이상욱","원가희","신혜진",
+"김선희","한은태","박초롱","박준하","채란","이민지"
+];
+
+let selected = null;
+
+// 수동 배치 시작
+function startManual() {
+  const waiting = document.getElementById("waiting");
+  waiting.innerHTML = "";
+
+  // 모든 자리 비우기
+  document.querySelectorAll(".seat.yellow").forEach(seat => {
+    seat.innerText = "";
+  });
+
+  // 대기열 채우기
+  students.forEach(name => {
+    const div = document.createElement("div");
+    div.className = "seat yellow";
+    div.innerText = name;
+
+    div.onclick = () => {
+      if (selected) selected.classList.remove("selected");
+      selected = div;
+      div.classList.add("selected");
+    };
+
+    waiting.appendChild(div);
+  });
+}
+
+// 자리 클릭
+document.querySelectorAll(".seat").forEach(seat => {
+  seat.addEventListener("click", () => {
+    if (!seat.classList.contains("yellow")) return;
+
+    // 대기열 → 자리
+    if (selected && selected.parentElement.id === "waiting") {
+      if (seat.innerText !== "") return;
+
+      seat.innerText = selected.innerText;
+      selected.remove();
+      selected = null;
+    }
+
+    // 자리 → 대기열
+    else if (!selected && seat.innerText !== "") {
+      const waiting = document.getElementById("waiting");
+
+      const div = document.createElement("div");
+      div.className = "seat yellow";
+      div.innerText = seat.innerText;
+
+      div.onclick = () => {
+        if (selected) selected.classList.remove("selected");
+        selected = div;
+        div.classList.add("selected");
+      };
+
+      waiting.appendChild(div);
+      seat.innerText = "";
+    }
+  });
+});
+
+// 랜덤 (자리 채워진 상태에서만)
+function shuffleSeats() {
+  const seats = Array.from(document.querySelectorAll('.seat.yellow'))
+    .filter(s => s.innerText !== "");
+
+  const names = seats.map(s => s.innerText);
+
+  for (let i = names.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [names[i], names[j]] = [names[j], names[i]];
+  }
+
+  seats.forEach((seat, i) => {
+    seat.innerText = names[i];
+  });
+}
+</script>
+
+</body>
+</html>
