@@ -42,16 +42,17 @@ def product():
 ########################################
 # API용 라우팅
 ########################################
-@app.route('/api/user/<id>')
-def search_user(id):
+@app.route('/api/users')
+@app.route('/api/users/<id>')
+def search_user(id=0):
     # 사용자를 검색해서 
-    users = None
-    return jsonify({"result": users})
+    user = users
+    return jsonify({"result": user})
 
 @app.route('/api/product')
 def search_product():
     # Product 를 검색해서
-    product = None
+    product = products
     return jsonify({"result": product})
 
 if __name__ == "__main__":

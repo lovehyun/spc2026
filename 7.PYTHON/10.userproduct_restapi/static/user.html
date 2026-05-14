@@ -19,7 +19,7 @@
             ev.preventDefault();
 
             const id = document.getElementById('id').value;
-            fetch(`/api/user/${id}`)
+            fetch(`/api/users/${id}`)
                 .then((resp) => resp.json())
                 .then((data) => console.log(data));
         });
