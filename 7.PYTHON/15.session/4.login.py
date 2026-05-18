@@ -7,6 +7,7 @@ from flask import session
 app = Flask(__name__)
 app.secret_key = 'my-random-key'
 
+# 사용자 DB
 users = [
     {'name': 'Alice', 'id': 'alice', 'pw': 'alice'},
     {'name': 'Bob', 'id': 'bob', 'pw': 'bob1234'},
@@ -50,11 +51,22 @@ def login():
 # 1-2. users 안에서 나의 비번을 바꾼다.
 # 1-3. 성공적으로 변경되면 나의 profile에서 확인한다
 # 1-4. '비밀번호 변경' 을 눌렀을때 성공적으로 변경되었음을 알려준다 (사용자 피드백)
-@app.route('/profile')
+@app.route('/profile', methods=['GET', 'POST'])
 def profile():
     user = session.get('user')
     if not user:
         return redirect(url_for('home')) # 로그인 안됐으면 로그인 페이지로 강제 이동
+    
+    if request.method == 'POST':
+        new_pw = request.form.get('new_pw')
+        for u in users:
+            if u['id'] == user['id']:
+                u['pw'] = new_pw
+                session['user'] = u  # 세션정보를 구->신 버전으로 갱신
+
+                message = '성공적으로 비밀번호가 변경되었습니다.'
+                # return render_template('profile.html', user=user, message=message)
+                return redirect(url_for('profile'))
     
     return render_template('profile.html', user=user)
 
