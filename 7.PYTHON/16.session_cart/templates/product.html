@@ -12,6 +12,6 @@
         <li>{{ item.name }} (가격: {{ item.price }}원) <a href="{{ url_for('add_to_cart', item_id=item.id) }}">카트에추가</a> </li>
         {% endfor %}
     </ul>
-    <a href="">장바구니 보기</a>
+    <a href="/cart">장바구니 보기</a>
 </body>
 </html>

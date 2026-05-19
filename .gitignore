@@ -10,3 +10,8 @@ uploads/
 
 # 세션 임시 정보
 .sessions/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3

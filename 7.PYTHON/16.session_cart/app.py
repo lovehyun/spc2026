@@ -1,7 +1,9 @@
 from flask import Flask, render_template, session, redirect, url_for
+from datetime import timedelta
 
 app = Flask(__name__)
 app.secret_key = 'hello1234'
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=5)
 
 items = [
     {'id': 'item1', 'name': '햄버거', 'price': 3000},
