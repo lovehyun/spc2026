@@ -22,6 +22,29 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # 우리의 db와 flask 앱을 연결
 db.init_app(app)
 
+@app.route('/add', methods=["POST"])
+def add_user():
+    name = request.form.get('name')
+    age = request.form.get('age')
+    if not name or not age:
+        flash('이름과 나이를 모두 입력해야 합니다.')
+        return redirect(url_for('index'))
+    
+    new_user = User(name=name, age=age)
+    db.session.add(new_user)
+    db.session.commit()
+    return redirect(url_for('index'))
+
+@app.route('/delete_user/<int:id>')
+def delete_user(id):
+    user = db.session.get(User, id)
+    if user:
+        db.session.delete(user)
+        db.session.commit()
+        flash(f'사용자(id: {id}) 가 삭제되었습니다.')
+    
+    return redirect(url_for('index'))
+
 @app.route('/')
 def index():
     users = User.query.all()
