@@ -1,3 +1,6 @@
+# 개발 환경 파일
+*.pyc
+
 # 환경 설정
 .vscode
 .DS_Store
