@@ -1058,3 +1058,70 @@ footer a {
     color: var(--primary-cyan);
     text-decoration: none;
 }
+
+/* ==========================================================================
+   DYNAMIC LIGHT THEME OVERRIDES
+   ========================================================================== */
+html[data-theme="light"] {
+    --bg-dark: #f8fafc;
+    --bg-surface: rgba(255, 255, 255, 0.85);
+    --bg-glass: rgba(241, 245, 249, 0.85);
+    --text-white: #0f172a;       /* 기본 텍스트 짙은색으로 변환 */
+    --text-muted: #475569;       /* 가독성 높은 서브텍스트 */
+    --text-dark: #94a3b8;
+    --border-color: rgba(0, 0, 0, 0.08);
+    --border-active: rgba(79, 172, 254, 0.5);
+    --shadow-cyan: 0 8px 30px rgba(0, 242, 254, 0.12);
+    --shadow-purple: 0 8px 30px rgba(127, 0, 255, 0.12);
+}
+
+/* 라이트 테마 전용 백그라운드 그라데이션 보정 */
+html[data-theme="light"] body {
+    background-image: 
+        radial-gradient(at 10% 20%, rgba(79, 172, 254, 0.04) 0px, transparent 50%),
+        radial-gradient(at 90% 80%, rgba(127, 0, 255, 0.04) 0px, transparent 50%);
+}
+
+/* ★ 핵심: 오리지널 그라데이션 클리핑 구문을 유지하되, 라이트 모드용 짙은 메탈릭 다크 톤으로만 교체 */
+html[data-theme="light"] .hero-title {
+    background: linear-gradient(to right, #0f172a, #475569);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+html[data-theme="light"] .page-title {
+    background: linear-gradient(135deg, #0f172a 0%, var(--text-muted) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* 입력창 라이트 테마 가독성 보정 */
+html[data-theme="light"] .search-input,
+html[data-theme="light"] .input-premium,
+html[data-theme="light"] .textarea-premium {
+    background: rgba(0, 0, 0, 0.03);
+    color: #0f172a;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+}
+html[data-theme="light"] .search-input:focus,
+html[data-theme="light"] .input-premium:focus,
+html[data-theme="light"] .textarea-premium:focus {
+    background: #ffffff;
+    border-color: var(--primary-cyan);
+}
+
+/* 카드 및 스크롤바 세부 마감 */
+html[data-theme="light"] .song-card {
+    background: #ffffff;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+html[data-theme="light"] .song-card:hover {
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08), var(--shadow-cyan);
+}
+html[data-theme="light"] ::-webkit-scrollbar-track {
+    background: #f8fafc;
+}
+html[data-theme="light"] ::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.1);
+}
+

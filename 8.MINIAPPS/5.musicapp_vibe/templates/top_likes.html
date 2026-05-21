@@ -4,8 +4,8 @@
 
 {% block content %}
 <div>
-    <h2 class="page-title">🔥 Top Likes Chart</h2>
-    <p style="color: var(--text-muted); margin-bottom: 2rem; font-size: 1.05rem;">
+    <h2 class="page-title" data-i18n="top_likes_title">🔥 Top Likes Chart</h2>
+    <p data-i18n="top_likes_desc" style="color: var(--text-muted); margin-bottom: 2rem; font-size: 1.05rem;">
         Vibe 커뮤니티 유저들이 가장 많은 하트(좋아요)를 보낸 노래 순위입니다.
     </p>
 
@@ -32,7 +32,7 @@
                         <span style="font-size: 0.85rem; font-weight: 700; color: #ff1744; display: flex; align-items: center; gap: 0.2rem;">
                             ♥ {{ like_count }}
                         </span>
-                        <a href="{{ url_for('song_detail', track_id=song.track_id) }}" class="view-btn">Vibe 감상 &rarr;</a>
+                        <a href="{{ url_for('song_detail', track_id=song.track_id) }}" class="view-btn" data-i18n="view_vibe">Vibe 감상 &rarr;</a>
                     </div>
                 </div>
             {% endfor %}
@@ -40,8 +40,7 @@
     {% else %}
         <div style="text-align: center; color: var(--text-muted); padding: 5rem 0; background: var(--bg-surface); border-radius: 16px; border: 1px solid var(--border-color);">
             <div style="font-size: 3rem; margin-bottom: 1rem;">📭</div>
-            <p style="font-size: 1.1rem;">아직 추천/좋아요가 누적된 곡이 존재하지 않습니다.</p>
-            <p style="font-size: 0.9rem; color: var(--text-dark); margin-top: 0.5rem;">마음에 드는 노래에 하트를 먼저 눌러 순위를 올려보세요!</p>
+            <p data-i18n="no_top_likes_alert" style="font-size: 1.1rem; line-height: 1.6;">아직 추천/좋아요가 누적된 곡이 존재하지 않습니다.</p>
         </div>
     {% endif %}
 </div>

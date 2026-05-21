@@ -16,19 +16,19 @@
                 <div id="username-display-wrapper" style="display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.3rem;">
                     <h2 id="profile-username" style="font-family: var(--font-outfit); font-size: 2rem; margin: 0;">{{ user.username }}</h2>
                     <button id="edit-username-btn" style="background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: 8px; color: var(--primary-cyan); cursor: pointer; padding: 0.3rem 0.6rem; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 0.2rem; transition: all 0.2s;" title="닉네임 변경">
-                        ✏️ 수정
+                        <span data-i18n="profile_edit_btn">✏️ 수정</span>
                     </button>
                 </div>
                 
                 <!-- Inline Username Form (hidden by default) -->
                 <form id="edit-username-form" style="display: none; align-items: center; gap: 0.6rem; margin-bottom: 0.3rem; flex-wrap: wrap;">
-                    <input type="text" id="edit-username-input" class="input-premium" value="{{ user.username }}" placeholder="새 닉네임" style="font-size: 1.1rem; padding: 0.5rem 0.8rem; max-width: 200px; border-color: var(--primary-cyan);">
-                    <button type="submit" class="btn-primary" style="font-size: 0.85rem; padding: 0.5rem 1.0rem; align-self: center; margin: 0; box-shadow: 0 0 10px rgba(0,242,254,0.15);">저장</button>
-                    <button type="button" id="cancel-edit-btn" style="background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); color: var(--text-muted); cursor: pointer; padding: 0.5rem 1rem; border-radius: 30px; font-size: 0.85rem; font-weight: 600; transition: all 0.2s;">취소</button>
+                    <input type="text" id="edit-username-input" class="input-premium" value="{{ user.username }}" placeholder="새 닉네임" data-i18n-placeholder="profile_nickname_placeholder" style="font-size: 1.1rem; padding: 0.5rem 0.8rem; max-width: 200px; border-color: var(--primary-cyan);">
+                    <button type="submit" class="btn-primary" data-i18n="save" style="font-size: 0.85rem; padding: 0.5rem 1.0rem; align-self: center; margin: 0; box-shadow: 0 0 10px rgba(0,242,254,0.15);">저장</button>
+                    <button type="button" id="cancel-edit-btn" data-i18n="cancel" style="background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); color: var(--text-muted); cursor: pointer; padding: 0.5rem 1rem; border-radius: 30px; font-size: 0.85rem; font-weight: 600; transition: all 0.2s;">취소</button>
                 </form>
 
                 <div style="color: var(--text-muted); font-size: 0.95rem;">
-                    가입일: {{ user.created_at.strftime('%Y년 %m월 %d일') }}
+                    <span data-i18n="profile_joined" data-date="{{ user.created_at.strftime('%Y-%m-%d') }}">가입일: {{ user.created_at.strftime('%Y년 %m월 %d일') }}</span>
                     {% if user.is_admin %}
                         <span style="font-size: 0.75rem; background: var(--primary-cyan); color: var(--bg-dark); padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 700; margin-left: 0.5rem; vertical-align: middle;">ADMINISTRATOR</span>
                     {% endif %}
@@ -42,7 +42,7 @@
         
         <!-- Column 1: Liked Songs -->
         <div class="activity-box">
-            <h3 class="activity-title">💖 내가 좋아요 한 노래 ({{ likes|length }})</h3>
+            <h3 class="activity-title" data-i18n="profile_likes_tab" data-count="{{ likes|length }}">💖 내가 좋아요 한 노래 ({{ likes|length }})</h3>
             {% if likes %}
                 <ul class="activity-list">
                     {% for like in likes %}
@@ -58,7 +58,7 @@
                     {% endfor %}
                 </ul>
             {% else %}
-                <div style="text-align: center; color: var(--text-dark); padding: 3rem 0; font-size: 0.9rem;">
+                <div data-i18n="no_profile_likes" style="text-align: center; color: var(--text-dark); padding: 3rem 0; font-size: 0.9rem;">
                     좋아요를 누른 곡이 아직 없습니다.
                 </div>
             {% endif %}
@@ -66,7 +66,7 @@
 
         <!-- Column 2: Written Comments -->
         <div class="activity-box">
-            <h3 class="activity-title">💬 내가 작성한 댓글 ({{ comments|length }})</h3>
+            <h3 class="activity-title" data-i18n="profile_comments_tab" data-count="{{ comments|length }}">💬 내가 작성한 댓글 ({{ comments|length }})</h3>
             {% if comments %}
                 <ul class="activity-list">
                     {% for comment in comments %}
@@ -82,7 +82,7 @@
                     {% endfor %}
                 </ul>
             {% else %}
-                <div style="text-align: center; color: var(--text-dark); padding: 3rem 0; font-size: 0.9rem;">
+                <div data-i18n="no_profile_comments" style="text-align: center; color: var(--text-dark); padding: 3rem 0; font-size: 0.9rem;">
                     작성한 댓글이 아직 없습니다.
                 </div>
             {% endif %}
@@ -151,9 +151,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 
                 // Update navbar username Profile (...) if possible
-                const profileNavText = document.querySelector('a[href="/profile"]');
+                const profileNavText = document.querySelector('[data-i18n="nav_profile"]');
                 if (profileNavText) {
-                    profileNavText.innerHTML = `<span>👤</span> Profile (${data.new_username})`;
+                    profileNavText.setAttribute('data-username', data.new_username);
+                    if (window.updateLanguageUI) {
+                        const currentLang = localStorage.getItem('lang') || 'ko';
+                        window.updateLanguageUI(currentLang);
+                    } else {
+                        profileNavText.innerHTML = `Profile (${data.new_username})`;
+                    }
                 }
                 
                 // Show dynamic success toast

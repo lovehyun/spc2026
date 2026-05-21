@@ -213,10 +213,13 @@ def api_search():
             songs_desc = Song.query.filter(Song.description.like(f'%{query}%')).all()
             # Find comments containing this hashtag
             comments_tag = Comment.query.filter(Comment.content.like(f'%{query}%')).all()
+            # Find dedicated song tags
+            dedicated_tags = SongTag.query.filter(SongTag.tag.like(f'%{query}%')).all()
             
             # Extract unique song IDs
             song_ids = {s.id for s in songs_desc}
             song_ids.update({c.song_id for c in comments_tag})
+            song_ids.update({t.song_id for t in dedicated_tags})
             
             if not song_ids:
                 return jsonify([])

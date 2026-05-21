@@ -3,6 +3,8 @@
    ========================================================================== */
 
 document.addEventListener('DOMContentLoaded', () => {
+    initThemeToggler();
+    initLanguageToggler();
     initRealtimeNotifications();
     initMusicSearch();
     initCustomAudioPlayer();
@@ -38,6 +40,12 @@ function initRealtimeNotifications() {
             badge.style.display = 'inline-block';
         }
         
+        // Load current language to translate notifications dynamically
+        const currentLang = localStorage.getItem('lang') || 'ko';
+        const msgText = currentLang === 'ko'
+            ? `님이 내가 좋아요 한 '${payload.song_title}'에 댓글을 남겼습니다.`
+            : ` left a comment on '${payload.song_title}' which you liked.`;
+            
         // 2. Spawn a beautiful Toast alert
         if (toastContainer) {
             const toast = document.createElement('div');
@@ -45,7 +53,7 @@ function initRealtimeNotifications() {
             toast.innerHTML = `
                 <img class="toast-artwork" src="${payload.artwork_url || 'https://via.placeholder.com/60'}" alt="cover">
                 <div class="toast-content">
-                    <div class="toast-msg"><strong>${payload.sender}</strong> ${payload.message}</div>
+                    <div class="toast-msg"><strong>${payload.sender}</strong> ${msgText}</div>
                     <div class="toast-time">${payload.timestamp}</div>
                 </div>
                 <button class="toast-close">&times;</button>
@@ -98,15 +106,28 @@ function initRealtimeNotifications() {
             
             const li = document.createElement('li');
             li.className = 'comment-card unread-notif';
-            li.innerHTML = `
-                <div class="comment-meta">
-                    <span class="comment-author">${payload.sender}</span>
-                    <span class="comment-time">${payload.timestamp}</span>
-                </div>
-                <div class="comment-body">
-                    내가 좋아요 한 노래 <a href="/song/${payload.song_id}" style="color: var(--primary-cyan); font-weight: 600;">${payload.song_title}</a>에 새로운 댓글을 남겼습니다.
-                </div>
-            `;
+            
+            if (currentLang === 'ko') {
+                li.innerHTML = `
+                    <div class="comment-meta">
+                        <span class="comment-author">${payload.sender}</span>
+                        <span class="comment-time">${payload.timestamp}</span>
+                    </div>
+                    <div class="comment-body" data-i18n-notif-comment="${payload.song_title}" data-song-url="/song/${payload.song_id}">
+                        내가 좋아요 한 노래 <a href="/song/${payload.song_id}" style="color: var(--primary-cyan); font-weight: 600;">${payload.song_title}</a>에 새로운 댓글을 남겼습니다.
+                    </div>
+                `;
+            } else {
+                li.innerHTML = `
+                    <div class="comment-meta">
+                        <span class="comment-author">${payload.sender}</span>
+                        <span class="comment-time">${payload.timestamp}</span>
+                    </div>
+                    <div class="comment-body" data-i18n-notif-comment="${payload.song_title}" data-song-url="/song/${payload.song_id}">
+                        left a new comment on <a href="/song/${payload.song_id}" style="color: var(--primary-cyan); font-weight: 600;">${payload.song_title}</a> which you liked.
+                    </div>
+                `;
+            }
             notifPageList.insertBefore(li, notifPageList.firstChild);
         }
     };
@@ -383,3 +404,356 @@ window.showToast = function(message, type = 'success') {
         setTimeout(() => toast.remove(), 300);
     }, 5000);
 };
+
+// ==========================================
+// 7. DYNAMIC THEME SWITCHER CONTROLLER
+// ==========================================
+function initThemeToggler() {
+    const btn = document.getElementById('theme-toggle-btn');
+    if (!btn) return;
+    
+    // Set initial icon
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+    btn.innerHTML = currentTheme === 'dark' ? '☀️' : '🌙';
+    
+    btn.addEventListener('click', () => {
+        const activeTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const nextTheme = activeTheme === 'dark' ? 'light' : 'dark';
+        
+        document.documentElement.setAttribute('data-theme', nextTheme);
+        localStorage.setItem('theme', nextTheme);
+        btn.innerHTML = nextTheme === 'dark' ? '☀️' : '🌙';
+        
+        if (window.showToast) {
+            const currentLang = localStorage.getItem('lang') || 'ko';
+            const msg = nextTheme === 'dark' 
+                ? (currentLang === 'ko' ? '다크 모드로 전환되었습니다.' : 'Switched to Dark Mode.')
+                : (currentLang === 'ko' ? '라이트 모드로 전환되었습니다.' : 'Switched to Light Mode.');
+            window.showToast(msg, 'success');
+        }
+    });
+}
+
+// ==========================================
+// 8. BILINGUAL i18n TRANSLATION MODULE
+// ==========================================
+const i18nDictionary = {
+    ko: {
+        "nav_home": "홈",
+        "nav_top_likes": "인기 Vibe",
+        "nav_hashtags": "해시태그",
+        "nav_notifications": "알림 피드",
+        "nav_profile": "내 프로필 ({username})",
+        "nav_logout": "로그아웃",
+        "nav_login": "로그인",
+        "nav_admin": "관리자",
+        "footer_text": "© 2026 Vibe. GenAI Labs 최초 제작. iTunes 검색 제공. Vanilla JS/CSS로 디자인되었습니다.",
+        
+        "hero_title": "Discover Your Vibe",
+        "hero_subtitle": "실시간으로 음악을 검색하고, 당신의 소중한 감상평(Vibe)을 남겨 다른 사람들과 소통해 보세요.",
+        "search_placeholder": "노래 제목, 아티스트 이름 등으로 검색해 보세요...",
+        "feed_title_music": "🎵 실시간 음악 피드",
+        "feed_title_likes": "💖 최근 좋아요 소식",
+        "feed_no_comments": "아직 피드 글이 없습니다. 첫 Vibe를 남겨보세요!",
+        "feed_no_likes": "아직 하트 신호가 없습니다. 곡을 탐색하고 하트를 꾹 눌러보세요!",
+        "view_vibe": "Vibe 보기 &rarr;",
+        
+        "preview_title": "30초 미리듣기 재생",
+        "preview_desc": "클릭 시 레코드가 회전하며 음악이 스트리밍됩니다.",
+        "vibe_title": "✨ Music Vibe & Description",
+        "no_description_alert": "이 노래에 등록된 소개글이 아직 없습니다. 아래에서 첫 음악적 감상을 등록해 보세요!",
+        "edit_description_btn": "📝 소개글 작성/수정하기",
+        "edit_description_placeholder": "이 음악의 스토리나 당신의 특별한 감성 피드, 해시태그(예: #chill #신나는)를 적어주세요...",
+        "cancel": "취소",
+        "save": "저장하기",
+        "login_prompt_vibe": "💡 <a href=\"/login\" style=\"color: var(--primary-cyan); text-decoration: none;\">로그인</a> 후 이 노래의 감상글과 해시태그를 수정할 수 있습니다.",
+        "youtube_title": "📺 Official YouTube Video",
+        "youtube_empty": "📺 해당 곡의 유튜브 영상을 불러오는 중이거나 찾을 수 없습니다.",
+        "youtube_bottom": "🎵 VIBE YouTube Integration: 아티스트와 노래를 매칭하여 최적의 뮤직비디오/영상을 실시간으로 가져옵니다.",
+        "comments_title": "💬 댓글 ({count})",
+        "comment_placeholder": "이 곡에 대해 자유롭게 이야기해 보세요! 해시태그도 사용 가능해요 (#추천 #드라이브)...",
+        "add_comment_btn": "댓글 남기기",
+        "login_prompt_comment": "💬 댓글을 달고 싶으신가요? <a href=\"/login\" style=\"color: var(--primary-cyan); text-decoration: none; font-weight: 600;\">로그인</a>이 필요합니다.",
+        "no_comments_alert": "아직 댓글 대화가 없습니다. 따뜻한 이야기를 먼저 시작해 보세요!",
+        
+        "add_tag_placeholder": "#태그 추가...",
+        "add_tag_btn": "추가",
+        
+        "hashtags_page_title": "🏷️ Vibe Hashtags Explorer",
+        "hashtags_page_desc": "음악 설명글과 댓글에서 추출한 감성 태그로 노래들을 모아 탐색할 수 있습니다.",
+        "no_hashtags_alert": "아직 커뮤니티에 등록된 해시태그가 없습니다. 노래 설명이나 댓글에 #태그를 적어 보세요!",
+        "hashtag_search_result": "🔍 {tag} 검색 결과 ({count})",
+        "clear_filter": "필터 지우기 &times;",
+        "no_tag_songs_alert": "지정된 태그를 포함한 활성 데이터가 유실되었거나 없습니다.",
+        "hashtags_page_prompt": "상단의 해시태그를 클릭하여 음악적 테마를 탐색해 보세요! #드라이브 #퇴근길 #새벽감성 #신나는 등 원하는 분위기를 필터링할 수 있습니다.",
+        
+        "top_likes_title": "🔥 Top Loved Vibes",
+        "top_likes_desc": "전체 커뮤니티에서 가장 많은 하트 신호를 받은 노래들을 모아 보여줍니다.",
+        "no_top_likes_alert": "아직 하트 신호를 기록한 곡이 없습니다. 원하는 노래에 하트를 눌러보세요!",
+        
+        "notif_page_title": "🔔 Real-Time Action Notifications",
+        "notif_page_desc": "실시간 소셜 피드 알림입니다. 내가 좋아요 한 노래의 새로운 소식을 확인해 보세요.",
+        "mark_all_read": "✔️ 모두 읽음으로 표시",
+        "no_notifs_alert": "아직 새로운 알림이 없습니다. 활발한 커뮤니티 활동을 즐겨보세요!",
+        
+        "profile_title": "👤 내 감성 프로필",
+        "profile_joined": "가입일: {date}",
+        "profile_edit_btn": "✏️ 수정",
+        "profile_nickname_placeholder": "새로운 닉네임 입력...",
+        "profile_likes_tab": "💖 좋아요 한 곡 ({count})",
+        "profile_comments_tab": "💬 남긴 댓글 ({count})",
+        "no_profile_likes": "아직 좋아요 한 곡이 없습니다. 마음에 드는 곡에 하트를 꾹 눌러보세요!",
+        "no_profile_comments": "아직 남긴 댓글이 없습니다. 음악 감상평을 먼저 남겨보세요!",
+        
+        "login_title": "🔑 VIBE 로그인",
+        "login_subtitle": "음악으로 하나 되는 공간, 바이브에 로그인하세요.",
+        "login_id": "아이디",
+        "login_id_placeholder": "아이디를 입력해 주세요",
+        "login_pw": "비밀번호",
+        "login_pw_placeholder": "비밀번호를 입력해 주세요",
+        "login_submit": "로그인",
+        "login_footer": "아직 계정이 없으신가요? <a href=\"/register\" style=\"color: var(--primary-cyan); text-decoration: none; font-weight: 600;\">회원가입 하기</a>",
+        
+        "register_title": "📝 VIBE 회원가입",
+        "register_subtitle": "지금 가입하고 실시간 음악 소식과 감성을 공유해 보세요.",
+        "register_id": "사용할 아이디",
+        "register_id_placeholder": "3자 이상 입력하세요",
+        "register_pw": "비밀번호",
+        "register_pw_placeholder": "4자 이상 입력하세요",
+        "register_pw_confirm": "비밀번호 확인",
+        "register_pw_confirm_placeholder": "동일한 비밀번호를 다시 입력하세요",
+        "register_submit": "회원가입 완료",
+        "register_footer": "이미 계정이 있으신가요? <a href=\"/login\" style=\"color: var(--primary-cyan); text-decoration: none; font-weight: 600;\">로그인 하기</a>",
+        
+        "admin_title": "⚙️ Admin Control Cockpit",
+        "admin_desc": "커뮤니티 모니터링, 악성 유저 정지, 유해 콘텐츠(댓글, 캐싱 음악) 영구 삭제 등 관리 제어 권한을 행사합니다.",
+        "admin_kpi_users": "총 가입 유저",
+        "admin_kpi_songs": "DB 저장 음악",
+        "admin_kpi_comments": "등록된 댓글",
+        "admin_kpi_likes": "누적 좋아요 수",
+        "admin_sec_users": "👤 가입 사용자 제어 및 관리",
+        "admin_th_num": "번호",
+        "admin_th_user": "사용자 아이디",
+        "admin_th_joined": "가입 시각",
+        "admin_th_role": "관리자 여부",
+        "admin_th_status": "상태 (정지 유무)",
+        "admin_th_actions": "제어 작업",
+        "admin_role_user": "일반 유저",
+        "admin_status_active": "✅ 활성",
+        "admin_status_blocked": "🛑 정지됨",
+        "admin_btn_block": "계정 정지",
+        "admin_btn_unblock": "정지 해제",
+        "admin_sec_comments": "💬 커뮤니티 댓글 필터링 및 악플 차단",
+        "admin_th_song": "연결 노래",
+        "admin_th_comment_body": "댓글 본문 내용",
+        "admin_btn_delete": "강제 삭제",
+        "admin_sec_songs": "💿 DB 인덱싱 노래 캐시 관리",
+        "admin_th_track_artist": "곡명 및 아티스트",
+        "admin_th_vibe_body": "소개글(Vibe) 본문",
+        "admin_th_likes_count": "좋아요 수",
+        "admin_no_users": "가입한 일반 사용자가 아직 없습니다.",
+        "admin_no_comments": "최근 등록된 댓글이 없습니다.",
+        "admin_no_description": "소개 없음",
+        "admin_btn_db_delete": "DB 삭제",
+        "admin_no_songs": "인덱싱된 곡 정보가 없습니다."
+    },
+    en: {
+        "nav_home": "Home",
+        "nav_top_likes": "Top Likes",
+        "nav_hashtags": "Hashtags",
+        "nav_notifications": "Notifications",
+        "nav_profile": "Profile ({username})",
+        "nav_logout": "Logout",
+        "nav_login": "Login",
+        "nav_admin": "Admin",
+        "footer_text": "© 2026 Vibe. Originally Crafted by GenAI Labs. Powered by iTunes Search. Built beautifully with Vanilla JS/CSS.",
+        
+        "hero_title": "Discover Your Vibe",
+        "hero_subtitle": "Search for music in real-time, share your personal music vibe, and connect with other listeners.",
+        "search_placeholder": "Search songs, artists, vibes...",
+        "feed_title_music": "🎵 Live Music Feed",
+        "feed_title_likes": "💖 Recent Hearts",
+        "feed_no_comments": "No vibe comments yet. Be the first to share!",
+        "feed_no_likes": "No likes yet. Explore songs and tap the heart!",
+        "view_vibe": "View Vibe &rarr;",
+        
+        "preview_title": "30s Preview Player",
+        "preview_desc": "Click to spin the record and stream music live.",
+        "vibe_title": "✨ Music Vibe & Description",
+        "no_description_alert": "No custom vibes or story registered for this track. Write one below!",
+        "edit_description_btn": "📝 Write/Edit Vibe Story",
+        "edit_description_placeholder": "Share the story of this song, your special feelings, or hashtag vibes (e.g. #chill #happy)...",
+        "cancel": "Cancel",
+        "save": "Save",
+        "login_prompt_vibe": "💡 <a href=\"/login\" style=\"color: var(--primary-cyan); text-decoration: none;\">Log in</a> to edit this song's commentary and hashtags.",
+        "youtube_title": "📺 Official YouTube Video",
+        "youtube_empty": "📺 Loading or unable to find YouTube video for this track.",
+        "youtube_bottom": "🎵 VIBE YouTube Integration: Real-time matched official music video based on artist & song name.",
+        "comments_title": "💬 Comments ({count})",
+        "comment_placeholder": "Talk about this song! Hashtags are fully supported (#vibe #kpop)...",
+        "add_comment_btn": "Add Comment",
+        "login_prompt_comment": "💬 Want to leave a comment? <a href=\"/login\" style=\"color: var(--primary-cyan); text-decoration: none; font-weight: 600;\">Login</a> is required.",
+        "no_comments_alert": "No comments yet. Start a warm conversation!",
+        
+        "add_tag_placeholder": "#add tag...",
+        "add_tag_btn": "Add",
+        
+        "hashtags_page_title": "🏷️ Vibe Hashtags Explorer",
+        "hashtags_page_desc": "Explore collections of songs aggregated by emotional tags extracted from stories and comments.",
+        "no_hashtags_alert": "No hashtags registered yet. Write #tags in song descriptions or comments!",
+        "hashtag_search_result": "🔍 Results for {tag} ({count})",
+        "clear_filter": "Clear Filter &times;",
+        "no_tag_songs_alert": "No active songs matched this tag.",
+        "hashtags_page_prompt": "Click on a hashtag above to explore musical themes! Filter by moods like #chill, #drive, #happy, and more.",
+        
+        "top_likes_title": "🔥 Top Loved Vibes",
+        "top_likes_desc": "Curated collection of the most liked songs across the entire Vibe community.",
+        "no_top_likes_alert": "No liked tracks yet. Find a song you love and give it a heart!",
+        
+        "notif_page_title": "🔔 Real-Time Action Notifications",
+        "notif_page_desc": "Social updates and notification stream. Stay updated on tracks you liked.",
+        "mark_all_read": "✔️ Mark All as Read",
+        "no_notifs_alert": "No notifications yet. Connect with other music lovers!",
+        
+        "profile_title": "👤 User Vibe Profile",
+        "profile_joined": "Joined: {date}",
+        "profile_edit_btn": "✏️ Edit",
+        "profile_nickname_placeholder": "Enter new nickname...",
+        "profile_likes_tab": "💖 Liked Tracks ({count})",
+        "profile_comments_tab": "💬 Comments Written ({count})",
+        "no_profile_likes": "No liked tracks yet. Tap a heart on tracks you enjoy!",
+        "no_profile_comments": "No comments written yet. Share your thoughts on a track!",
+        
+        "login_title": "🔑 VIBE Member Login",
+        "login_subtitle": "Step into the space united by music. Log in to Vibe.",
+        "login_id": "Username",
+        "login_id_placeholder": "Enter your username",
+        "login_pw": "Password",
+        "login_pw_placeholder": "Enter your password",
+        "login_submit": "Login",
+        "login_footer": "Don't have an account? <a href=\"/register\" style=\"color: var(--primary-cyan); text-decoration: none; font-weight: 600;\">Sign Up</a>",
+        
+        "register_title": "📝 Create VIBE Account",
+        "register_subtitle": "Join now to share real-time music feeds and emotional vibes.",
+        "register_id": "Username",
+        "register_id_placeholder": "Enter 3 characters or more",
+        "register_pw": "Password",
+        "register_pw_placeholder": "Enter 4 characters or more",
+        "register_pw_confirm": "Confirm Password",
+        "register_pw_confirm_placeholder": "Re-enter the same password",
+        "register_submit": "Sign Up",
+        "register_footer": "Already have an account? <a href=\"/login\" style=\"color: var(--primary-cyan); text-decoration: none; font-weight: 600;\">Login</a>",
+        
+        "admin_title": "⚙️ Admin Control Cockpit",
+        "admin_desc": "Perform administrative controls such as monitoring community activity, suspending users, and deleting contents.",
+        "admin_kpi_users": "Total Users",
+        "admin_kpi_songs": "Songs in DB",
+        "admin_kpi_comments": "Comments",
+        "admin_kpi_likes": "Total Likes",
+        "admin_sec_users": "👤 User Moderation & Control",
+        "admin_th_num": "No.",
+        "admin_th_user": "Username",
+        "admin_th_joined": "Date Joined",
+        "admin_th_role": "Is Admin",
+        "admin_th_status": "Status",
+        "admin_th_actions": "Controls",
+        "admin_role_user": "Regular User",
+        "admin_status_active": "✅ Active",
+        "admin_status_blocked": "🛑 Suspended",
+        "admin_btn_block": "Suspend",
+        "admin_btn_unblock": "Unsuspend",
+        "admin_sec_comments": "💬 Comment Filtering & Moderation",
+        "admin_th_song": "Song Track",
+        "admin_th_comment_body": "Comment Body",
+        "admin_btn_delete": "Force Delete",
+        "admin_sec_songs": "💿 Song Cache Index Management",
+        "admin_th_track_artist": "Song & Artist",
+        "admin_th_vibe_body": "Vibe Description",
+        "admin_th_likes_count": "Likes",
+        "admin_no_users": "No registered regular users yet.",
+        "admin_no_comments": "No recent comments available.",
+        "admin_no_description": "No Description",
+        "admin_btn_db_delete": "Delete DB",
+        "admin_no_songs": "No cached tracks registered in database."
+    }
+};
+
+function updateLanguageUI(lang) {
+    const translation = i18nDictionary[lang];
+    if (!translation) return;
+
+    // 1. Text elements: data-i18n
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        let text = translation[key];
+        
+        if (text) {
+            // Context injection values
+            if (key === 'nav_profile') {
+                const username = el.getAttribute('data-username');
+                text = text.replace('{username}', username);
+            }
+            if (key === 'profile_joined') {
+                const date = el.getAttribute('data-date');
+                text = text.replace('{date}', date);
+            }
+            if (key === 'comments_title' || key === 'profile_likes_tab' || key === 'profile_comments_tab') {
+                const count = el.getAttribute('data-count');
+                text = text.replace('{count}', count);
+            }
+            if (key === 'hashtag_search_result') {
+                const tag = el.getAttribute('data-tag');
+                const count = el.getAttribute('data-count');
+                text = text.replace('{tag}', tag).replace('{count}', count);
+            }
+            
+            // Keep dynamic symbols if not included (e.g. arrows)
+            el.innerHTML = text;
+        }
+    });
+
+    // 2. Input Placeholders: data-i18n-placeholder
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        const text = translation[key];
+        if (text) {
+            el.setAttribute('placeholder', text);
+        }
+    });
+
+    // 3. Dynamic notifications timelines
+    document.querySelectorAll('[data-i18n-notif-comment]').forEach(el => {
+        const songTitle = el.getAttribute('data-i18n-notif-comment');
+        const url = el.getAttribute('data-song-url');
+        
+        if (lang === 'ko') {
+            el.innerHTML = `내가 좋아요 한 노래 <a href="${url}" style="color: var(--primary-cyan); font-weight: 600;">${songTitle}</a>에 새로운 댓글을 남겼습니다.`;
+        } else {
+            el.innerHTML = `left a new comment on <a href="${url}" style="color: var(--primary-cyan); font-weight: 600;">${songTitle}</a> which you liked.`;
+        }
+    });
+}
+
+function initLanguageToggler() {
+    const btn = document.getElementById('lang-toggle-btn');
+    if (!btn) return;
+    
+    // Retrieve setting
+    const currentLang = localStorage.getItem('lang') || 'ko';
+    updateLanguageUI(currentLang);
+    btn.textContent = currentLang === 'ko' ? 'EN' : 'KO';
+    
+    btn.addEventListener('click', () => {
+        const activeLang = localStorage.getItem('lang') || 'ko';
+        const nextLang = activeLang === 'ko' ? 'en' : 'ko';
+        
+        localStorage.setItem('lang', nextLang);
+        updateLanguageUI(nextLang);
+        btn.textContent = nextLang === 'ko' ? 'EN' : 'KO';
+        
+        if (window.showToast) {
+            const toastMsg = nextLang === 'ko' ? '한국어로 언어가 변경되었습니다.' : 'Language has been changed to English.';
+            window.showToast(toastMsg, 'success');
+        }
+    });
+}
