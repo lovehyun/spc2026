@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Vibe - 음악 SNS{% endblock %}</title>
+    <!-- Meta tags for premium SEO -->
+    <meta name="description" content="실시간 음악 SNS 플랫폼 Vibe. 좋아하는 노래를 검색하고 의견을 나누며 소통해 보세요.">
+    <!-- Premium Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header>
+        <div class="nav-container">
+            <a href="{{ url_for('home') }}" class="logo-link" id="nav-logo">
+                <span class="logo-text">VIBE</span>
+            </a>
+            
+            <ul class="nav-menu">
+                <li class="nav-item {% if request.path == '/' %}active{% endif %}">
+                    <a href="{{ url_for('home') }}">
+                        <span>🏠</span> Home
+                    </a>
+                </li>
+                <li class="nav-item {% if request.path == '/top-likes' %}active{% endif %}">
+                    <a href="{{ url_for('top_likes') }}">
+                        <span>🔥</span> TopLikes
+                    </a>
+                </li>
+                <li class="nav-item {% if request.path == '/hashtags' %}active{% endif %}">
+                    <a href="{{ url_for('hashtags') }}">
+                        <span>🏷️</span> Hashtags
+                    </a>
+                </li>
+                <li class="nav-item {% if request.path == '/notifications' %}active{% endif %}">
+                    <a href="{% if user %}{{ url_for('notifications_page') }}{% else %}{{ url_for('login_page') }}{% endif %}">
+                        <span>🔔</span> Notifications
+                        <span id="notif-badge" class="badge" style="{% if unread_count == 0 %}display: none;{% endif %}">
+                            {{ unread_count }}
+                        </span>
+                    </a>
+                </li>
+                
+                {% if user %}
+                    <li class="nav-item {% if request.path == '/profile' %}active{% endif %}">
+                        <a href="{{ url_for('profile') }}">
+                            <span>👤</span> Profile ({{ user.username }})
+                        </a>
+                    </li>
+                    {% if user.is_admin %}
+                        <li class="nav-item {% if request.path == '/admin' %}active{% endif %}">
+                            <a href="{{ url_for('admin_dashboard') }}" style="color: var(--primary-cyan); border: 1px solid var(--border-active);">
+                                ⚙️ Admin
+                            </a>
+                        </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a href="{{ url_for('logout') }}" class="nav-btn">
+                            Logout
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a href="{{ url_for('login_page') }}" class="nav-btn">
+                            Login
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Real-time HTML5 Toast Alerts Overlay -->
+    <div id="toast-container"></div>
+
+    <!-- Footer section -->
+    <footer>
+        <p>&copy; 2026 Vibe. Originally Crafted by GenAI Labs. Powered by iTunes Search. Built beautifully with Vanilla JS/CSS.</p>
+    </footer>
+
+    <!-- Global Dynamic App JavaScript -->
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
