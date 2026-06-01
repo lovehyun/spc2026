@@ -48,6 +48,8 @@ def format_docs(docs):
     # return "\n\n".join(d.page_content for d in docs)
     return "\n\n".join(f"[{i}] {d.page_content}" for i, d in enumerate(docs, start=1))
 
+# HW. 아래 코드에서 개별 답변 번호화 참고자료 번호 맞추기.. 그래서 중복 레퍼런스도 허용하기.
+# 이때, 프롬프트에도 명확하게.. 답변의 번호화 출처의 번호를 맞춰서 답변하시오..
 def extract_sources(docs):  # 우리의 소스를 unique 하게 출력한다.
     seen, sources = set(), []
     for d in docs:
