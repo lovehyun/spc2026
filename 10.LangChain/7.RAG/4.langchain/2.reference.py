@@ -38,7 +38,7 @@ retriever = store.as_retriever(search_kwargs={"k": 3})
 # 2. LLM + 프롬프트 설계하기
 llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 prompt = ChatPromptTemplate.from_messages([
-    ("system", "당신은 문서 기반 QA시스템입니다. 아래 문서만 참고해서 답변하시오."),
+    ("system", "당신은 문서 기반 QA시스템입니다. 아래 문서만 참고해서 답변하시오.\n\n문서:\n{context}\n\n출처:\n{sources}"),
     ("user", "{question}")
 ])
 
@@ -71,9 +71,20 @@ def append_sources(d):
     src_lines = "\n".join(f" - {s}" for s in d["sources"])
     return f"{d["answer"]}\n\n 참고문서: \n{src_lines}"
 
+def debug_prompt(prompt):
+    print("\n==== LLM에 들어갈 입력값 (즉 PROMPT) ====")
+    for msg in prompt.messages:
+        print(f"[{msg.type.upper()}]")
+        print(msg.content)
+    print("\n==== 출력 끝 ====\n")
+    return prompt
+
 chain = (
     RunnableLambda(retrieve_and_split)
-    | RunnablePassthrough.assign(answer=(prompt | llm | StrOutputParser()))
+    | RunnablePassthrough.assign(answer=(prompt 
+                                         | RunnableLambda(debug_prompt)    # <-- 중간 결과 확인
+                                         | llm 
+                                         | StrOutputParser()))
     | RunnableLambda(append_sources)
 )
 
